@@ -6,6 +6,46 @@ from scipy.optimize import minimize
 from scipy.special import erf
 
 
+
+def process_sequences(arr):
+    if len(arr) == 0:
+        return np.array([])
+
+    result = []
+    i = 0
+    while i < len(arr):
+        # Find the start of a sequence
+        start = i
+        # Continue while numbers are consecutive
+        while i + 1 < len(arr) and arr[i + 1] == arr[i] + 1:
+            i += 1
+        # Include the current number in the sequence
+        end = i
+
+        # Process the sequence
+        seq_len = end - start + 1
+        if seq_len == 1:
+            # Single number, keep it
+            result.append(arr[start])
+        elif seq_len == 2:
+            # Two consecutive numbers, keep the first
+            result.append(arr[start])
+        else:
+            # Three or more numbers
+            # If odd length, take middle; if even, take center-left
+            mid_idx = start + (seq_len // 2)
+            if seq_len % 2 == 1:
+                # Odd length, take middle
+                result.append(arr[mid_idx])
+            else:
+                # Even length, take center-left
+                result.append(arr[mid_idx - 1])
+
+        i += 1
+
+    return np.array(result)
+
+
 # --- Define Skewed Gaussian Function ---
 def skewed_gaussian(x, A, mu, sigma, alpha):
     """Skewed Gaussian function."""
@@ -176,17 +216,26 @@ for pattern in df.columns:
     dy = np.diff(np.concatenate([[y[0]], y, [y[-1]]]))
     peaks = np.where((dy[:-2] > 0) & (dy[1:-1] <= 0))[0]  # where derivative changes from + to -
 
+    plateaus = np.where(dy[:-1] == 0)[0] + 1
+
+    plateaus = process_sequences(plateaus)
+
+    peaks = np.concatenate((peaks, plateaus))
+
+
     # Add endpoints if they're local maxima
     if y[0] > y[1]:
         peaks = np.append([0], peaks)
     if y[-1] > y[-2]:
         peaks = np.append(peaks, [len(y) - 1])
 
+    peaks = np.unique(peaks)
+    peaks = peaks[peaks <= len(y) - 1]  # Ensure peaks are within bounds
     # Filter peaks to keep only significant ones
     peak_heights = y[peaks]
-    threshold = np.mean(y) + 0.25 * (np.max(y) - np.mean(y))  # Dynamic threshold
-    significant_peaks = peaks[peak_heights > threshold]
-
+    # threshold = np.mean(y) + 0.25 * (np.max(y) - np.mean(y))  # Dynamic threshold
+    # significant_peaks = peaks[peak_heights > threshold]
+    significant_peaks = peaks
     # Ensure we have at least 2 peaks for a good fit
     if len(significant_peaks) < 2:
         # Add next highest point
