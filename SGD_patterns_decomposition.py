@@ -249,15 +249,53 @@ def save_model_parameters(results):
     models_parameters_df = models_parameters_df.round(2)
     models_parameters_df.to_excel('model_parameters.xlsx', index=False)
     # Save histogram of alphas
-    plt.figure(figsize=(10, 6))
-    plt.hist(all_alphas_for_all_patterns_for_hist, bins=20, color='blue', alpha=0.7)
+    # plt.figure(figsize=(10, 6))
+    # plt.hist(all_alphas_for_all_patterns_for_hist, bins=20, color='blue', alpha=0.7)
     # plt.title('Histogram of Alphas for All Patterns')
-    plt.xlabel('Alpha')
-    plt.ylabel('Frequency, Alphas for All Patterns')
-    plt.grid(True)
-    plt.show()
+    # plt.xlabel('Alpha')
+    # plt.ylabel('Frequency, Alphas for All Patterns')
+    # plt.grid(True)
+    # plt.show()
 
 
+def decompose_patterns(df, patterns=None, max_peaks=DefaultsParameters.MAX_PEAKS, hours=np.arange(24)):
+    """
+    Decompose patterns from a DataFrame, detecting peaks and fitting a model.
+
+    Parameters:
+    - df: DataFrame with time-indexed data and pattern columns.
+    - patterns: List of column names to process (default: all columns).
+    - max_peaks: Maximum number of peaks to detect (default: 6).
+    - hours: Array of hour indices for plotting (default: 0 to 23).
+
+    Returns:
+    - results: Dictionary with model parameters and peak information for each pattern.
+    """
+    if patterns is None:
+        patterns = df.columns
+
+    results = {}
+
+    for pattern in patterns:
+        print(f"\nProcessing {pattern}...")
+        y = df[pattern].values
+        x = np.arange(len(y))
+
+        # Detect peaks
+        significant_peaks = find_significant_peaks(df[[pattern]])
+
+        print(f"  Detected {len(significant_peaks)} significant peaks")
+
+        # Fit model
+        C_base, amplitudes, sigmas, alphas = fit_pattern(x, y, significant_peaks, pattern)
+
+        # Store results
+        results[pattern] = store_results(df, y, significant_peaks, C_base, amplitudes, sigmas, alphas)
+
+        # Print summary
+        print_pattern_summary(pattern, significant_peaks, C_base, sigmas, alphas)
+
+    return results
 
 
 def plot_pattern(df, patterns=None, max_peaks=DefaultsParameters.MAX_PEAKS, hours=np.arange(24)):
@@ -280,28 +318,28 @@ def plot_pattern(df, patterns=None, max_peaks=DefaultsParameters.MAX_PEAKS, hour
     # time_labels = [t.strftime('%H:%M') for t in df.index]
     time_labels = [t.strftime('%H') for t in df.index]
 
-
-    for pattern in patterns:
-        print(f"\nProcessing {pattern}...")
-        y = df[pattern].values
-        x = np.arange(len(y))
-
-        # Detect peaks
-        significant_peaks = find_significant_peaks(df[[pattern]])
-
-        print(f"  Detected {len(significant_peaks)} significant peaks")
-
-        # Fit model
-        C_base, amplitudes, sigmas, alphas = fit_pattern(x, y, significant_peaks)
-
-        # Store results
-        results[pattern] = store_results(df, y, significant_peaks, C_base, amplitudes, sigmas, alphas)
-
-        # Print summary
-        print_pattern_summary(pattern, significant_peaks, C_base, sigmas, alphas)
-
+    #
+    # for pattern in patterns:
+    #     print(f"\nProcessing {pattern}...")
+    #     y = df[pattern].values
+    #     x = np.arange(len(y))
+    #
+    #     # Detect peaks
+    #     significant_peaks = find_significant_peaks(df[[pattern]])
+    #
+    #     print(f"  Detected {len(significant_peaks)} significant peaks")
+    #
+    #     # Fit model
+    #     C_base, amplitudes, sigmas, alphas = fit_pattern(x, y, significant_peaks)
+    #
+    #     # Store results
+    #     results[pattern] = store_results(df, y, significant_peaks, C_base, amplitudes, sigmas, alphas)
+    #
+    #     # Print summary
+    #     print_pattern_summary(pattern, significant_peaks, C_base, sigmas, alphas)
+    results = decompose_patterns(df, patterns, max_peaks, hours)
     # Plot results
-    plot_actual_vs_predicted(df, results, hours, time_labels)
+    # plot_actual_vs_predicted(df, results, hours, time_labels)
     plot_model_components(df, results, hours, time_labels)
 
     # Print model parameters

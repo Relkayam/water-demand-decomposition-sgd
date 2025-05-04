@@ -14,7 +14,7 @@ def composite_model(x, peaks, C_base, amplitudes, sigmas, alphas):
 
 
 # --- Function to fit model ensuring it passes through peaks ---
-def fit_with_peak_constraints(x, y, peaks):
+def fit_with_peak_constraints(x, y, peaks, pattern=None):
     """Fit model ensuring it passes through all detected peaks while optimizing all parameters."""
     n_peaks = len(peaks)
     C_base = np.min(y)
@@ -106,7 +106,9 @@ def fit_with_peak_constraints(x, y, peaks):
 
     # If all attempts failed, try without constraints
     if best_result is None:
-        print(f"Warning: Constrained optimization failed. Trying unconstrained...")
+        # print(f"Warning: Constrained optimization failed. Trying unconstrained...")
+        print(f"Warning: Constrained optimization (force through all peaks) using SLSQP failed. \n Trying unconstrained....\n  using L-BFGS-B: for pattern{pattern} where initial params were: {initial_params}")
+
         result = minimize(
             objective,
             initial_params,
@@ -137,7 +139,7 @@ def fit_with_peak_constraints(x, y, peaks):
 
 
 
-def fit_pattern(x, y, significant_peaks):
+def fit_pattern(x, y, significant_peaks, pattern=None):
     """
     Fit a model to the data with constraints on peaks.
 
@@ -149,4 +151,4 @@ def fit_pattern(x, y, significant_peaks):
     Returns:
     - C_base, amplitudes, sigmas, alphas: Model parameters.
     """
-    return fit_with_peak_constraints(x, y, significant_peaks)
+    return fit_with_peak_constraints(x, y, significant_peaks, pattern)

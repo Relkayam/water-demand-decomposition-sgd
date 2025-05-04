@@ -2,86 +2,178 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from composite_and_fit_model import composite_model
-from decompose_pattern import store_results
+from SGD_patterns_decomposition import store_results
+from skewed_gaussian import single_gaussian
 
 
-# Prepare time index for a week (24 hours * 7 days)
-# time_index = pd.date_range(start='2025-05-04 00:00', end='2025-05-10 23:00', freq='1H')
+plt.rcParams.update({
+    'font.size': 16,          # Default font size
+    'axes.labelsize': 16,     # Font size for axis labels
+    'axes.titlesize': 16,     # Font size for axis titles
+    'xtick.labelsize': 16,    # Font size for x-axis tick labels
+    'ytick.labelsize': 16,    # Font size for y-axis tick labels
+    'legend.fontsize': 12,    # Font size for legend
+    'figure.titlesize': 16    # Font size for figure titles
+})
+
 
 # Define parameters for each day
 # Sunday to Thursday: 3 peaks (e.g., morning, noon, evening)
 sun_thu_peaks = np.array([7, 12, 19])  # Hours: 7:00, 12:00, 19:00
 sun_thu_params = {
-    'C_base': 10.0,
-    'amplitudes': np.array([20.0, 15.0, 25.0]),
-    'sigmas': np.array([1.5, 1.0, 2.0]),
-    'alphas': np.array([0.5, 0.3, 0.7])
+    'C_base': 2.0,
+    'amplitudes': np.array([15.0, 12.0, 15.0]),
+    'sigmas': np.array([3, 4.0, 2.0]),
+    'alphas': np.array([0.1, -0.3, 0.5])
 }
 
 # Friday: Evening peak concentration
-fri_peaks = np.array([18])  # Hour: 18:00
+fri_peaks = np.array([8, 17, 20])  # Hour: 18:00
 fri_params = {
-    'C_base': 10.0,
-    'amplitudes': np.array([50.0]),
-    'sigmas': np.array([2.5]),
-    'alphas': np.array([0.6])
-}
+        'C_base': 2.0,
+    'amplitudes': np.array([15.0, 12.0, 25.0]),
+    'sigmas': np.array([3, 3.0, 2.0]),
+    'alphas': np.array([0.5, -0.3, 0.7])
+    }
 
 # Saturday: 2 significant peaks (morning and evening)
-sat_peaks = np.array([9, 20])  # Hours: 9:00, 20:00
+sat_peaks = np.array([9, 12, 21])  # Hours: 9:00, 20:00
 sat_params = {
-    'C_base': 10.0,
-    'amplitudes': np.array([30.0, 40.0]),
-    'sigmas': np.array([1.8, 2.2]),
-    'alphas': np.array([0.4, 0.8])
-}
+        'C_base': 2.0,
+    'amplitudes': np.array([20.0, 6.0, 20.0]),
+    'sigmas': np.array([3, 5.0, 2.0]),
+    'alphas': np.array([0.5, -0.3, 0.7])
+    }
+
+# Create a list of days in correct order: Sunday to Saturday
+day_order = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 # Generate data for each day
 days_data = {}
-for day, (peaks, params) in [
-    ('Sunday', (sun_thu_peaks, sun_thu_params)),
-    ('Monday', (sun_thu_peaks, sun_thu_params)),
-    ('Tuesday', (sun_thu_peaks, sun_thu_params)),
-    ('Wednesday', (sun_thu_peaks, sun_thu_params)),
-    ('Thursday', (sun_thu_peaks, sun_thu_params)),
-    ('Friday', (fri_peaks, fri_params)),
-    ('Saturday', (sat_peaks, sat_params))
-]:
+for day in day_order:
+    if day == 'Friday':
+        peaks, params = fri_peaks, fri_params
+    elif day == 'Saturday':
+        peaks, params = sat_peaks, sat_params
+    else:
+        peaks, params = sun_thu_peaks, sun_thu_params
+
     day_hours = np.arange(0, 24)
     y = composite_model(day_hours, peaks, params['C_base'], params['amplitudes'], params['sigmas'], params['alphas'])
     days_data[day] = pd.DataFrame({'day': day, 'demand': y, 'hours': list(range(24))})
 
-# Concatenate all days into a single DataFrame
-df_week = pd.concat(days_data.values(), axis=0, ignore_index=True)
-print(df_week.head(168))
+# Concatenate all days into a single DataFrame, maintaining the order
+df_week = pd.concat([days_data[day] for day in day_order], ignore_index=True)
+
 # Store results for each day
 results = {}
-for day, df_day in days_data.items():
+for day in day_order:
+    df_day = days_data[day]
     y = df_day['demand'].values
-    peaks = np.array([df_day[df_day['hours'] == p].index[0] for p in sun_thu_peaks if p in df_day['hours'].values])
+
     if day == 'Friday':
-        peaks = np.array([df_day[df_day['hours'] == fri_peaks[0]].index[0]])
+        peaks = fri_peaks
     elif day == 'Saturday':
-        peaks = np.array([df_day[df_day['hours'] == sat_peaks[0]].index[0], df_day[df_day['hours'] == sat_peaks[1]].index[0]])
-    results[day] = store_results(df_day, y, peaks, params['C_base'], params['amplitudes'], params['sigmas'], params['alphas'])
+        peaks = sat_peaks
+    else:
+        peaks = sun_thu_peaks
+
+    # Note: This might need adjustment based on your store_results function
+    results[day] = store_results(df_day, y, peaks,
+                                 params['C_base'], params['amplitudes'],
+                                 params['sigmas'], params['alphas'])
+
+
+
+
 
 # Plot the weekly pattern
-plt.figure(figsize=(12, 6))
-plt.plot(df_week.index, df_week['demand'], label='Demand')
-plt.title('Weekly Water Demand Pattern (SGD)')
-plt.xlabel('Sample Index')
-plt.ylabel('Demand')
-plt.grid(True)
+plt.figure(figsize=(15, 6))
+plt.plot(df_week.index, df_week['demand'], label='Total Demand', linewidth=2, color='black')
+# plt.title('Weekly Water Demand Pattern (SGD) with Individual Gaussian Components', fontsize=14)
+# plt.xlabel('Hours (Sunday to Saturday)', fontsize=12)
+plt.ylabel('Demand $m^{3}/h$') ############################
+plt.grid(True, alpha=0.3)
 
-# Add vertical dashed lines to separate days
-day_boundaries = [0] + [24 * (i + 1) for i in range(6)]
-for boundary in day_boundaries[1:-1]:
-    plt.axvline(x=boundary - 0.5, color='grey', linestyle='--', alpha=0.5)
-    day_idx = boundary // 24
-    day_name = list(days_data.keys())[day_idx]
-    print(day_name)
-    plt.text(boundary, plt.ylim()[1], day_name, rotation=90, verticalalignment='top', horizontalalignment='right')
+# Add vertical dashed lines to separate days and label them properly
+day_boundaries = [0] + [24 * (i + 1) for i in range(7)]
+for i, boundary in enumerate(day_boundaries[:-1]):
+    # Add vertical line at the start of each day
+    plt.axvline(x=boundary, color='grey', linestyle='--', alpha=0.7)
 
-plt.legend()
+    # Add day label centered in each day's range
+    day_center = boundary + 12
+    day_name = day_order[i]
+    plt.text(day_center, plt.ylim()[1] * 0.95, day_name,
+             horizontalalignment='center', verticalalignment='top',
+             fontweight='bold')
+
+# Add individual Gaussian components with different colors
+peak_colors = ['red', 'green', 'blue', 'purple', 'orange']
+component_labels = []
+
+# Process each day and add individual Gaussian components
+for day_idx, day in enumerate(day_order):
+    start_hour = day_idx * 24
+    day_hours = np.arange(0, 24)
+
+    # Select the appropriate peaks and parameters based on the day
+    if day == 'Friday':
+        current_peaks = fri_peaks
+        current_params = fri_params
+    elif day == 'Saturday':
+        current_peaks = sat_peaks
+        current_params = sat_params
+    else:
+        current_peaks = sun_thu_peaks
+        current_params = sun_thu_params
+
+    # Plot base value
+    plt.hlines(y=current_params['C_base'], xmin=start_hour, xmax=start_hour + 23,
+               colors='lightgrey', linestyles='solid', linewidth=1, alpha=0.5)
+
+    # Add each individual Gaussian component
+    for peak_idx, peak_hour in enumerate(current_peaks):
+        color_idx = peak_idx % len(peak_colors)
+        color = peak_colors[color_idx]
+
+        # Calculate the individual Gaussian component
+        gaussian_y = single_gaussian(
+            day_hours,
+            peak_hour,
+            current_params['amplitudes'][peak_idx],
+            current_params['sigmas'][peak_idx],
+            current_params['alphas'][peak_idx]
+        )
+
+        # Add the base value to the Gaussian component
+        gaussian_y += current_params['C_base']
+
+        # Plot the individual Gaussian component
+        x_values = np.arange(start_hour, start_hour + 24)
+        plt.plot(x_values, gaussian_y, '--', color=color, linewidth=1.5)
+
+        # Add component label only once to the legend
+        component_label = f"Component {peak_idx + 1}"
+        if component_label not in component_labels:
+            plt.plot([], [], '--', color=color, linewidth=1.5, label=component_label)
+            component_labels.append(component_label)
+
+# Add tick marks at the start of each day
+plt.xticks(day_boundaries, [''] * len(day_boundaries))
+
+# Add hour labels below x-axis
+hours_per_tick = 6
+for day_idx, day in enumerate(day_order):
+    start_hour = day_idx * 24
+    for h in range(0, 24, hours_per_tick):
+        plt.text(start_hour + h, plt.ylim()[0] - 2, f"{h}h",
+                 horizontalalignment='center', fontsize=14)
+
+plt.legend(loc='best')
 plt.tight_layout()
 plt.show()
+
+# Save the DataFrame to an Excel file
+output_file = 'weekly_water_demand_pattern.xlsx'
+df_week.to_excel(output_file, index=False)
