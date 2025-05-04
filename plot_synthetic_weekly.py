@@ -31,18 +31,18 @@ sun_thu_params = {
 fri_peaks = np.array([8, 17, 20])  # Hour: 18:00
 fri_params = {
         'C_base': 2.0,
-    'amplitudes': np.array([15.0, 12.0, 25.0]),
+    'amplitudes': np.array([15.0, 12.0, 20.0]),
     'sigmas': np.array([3, 3.0, 2.0]),
     'alphas': np.array([0.5, -0.3, 0.7])
     }
 
 # Saturday: 2 significant peaks (morning and evening)
-sat_peaks = np.array([9, 12, 21])  # Hours: 9:00, 20:00
+sat_peaks = np.array([9, 17, 21])  # Hours: 9:00, 20:00
 sat_params = {
         'C_base': 2.0,
-    'amplitudes': np.array([20.0, 6.0, 20.0]),
-    'sigmas': np.array([3, 5.0, 2.0]),
-    'alphas': np.array([0.5, -0.3, 0.7])
+    'amplitudes': np.array([8.0, 16.0, 10.0]),
+    'sigmas': np.array([3, 5.0, 3.0]),
+    'alphas': np.array([0.5, -0.2, 0.5])
     }
 
 # Create a list of days in correct order: Sunday to Saturday
