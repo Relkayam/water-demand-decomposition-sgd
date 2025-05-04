@@ -1,7 +1,10 @@
  Weekly Water Demand Pattern Analysis
 
 ## Project Overview
-This project models and visualizes weekly water demand patterns using synthetic data. It employs skewed Gaussian functions to simulate daily water demand profiles and combines them to create a comprehensive weekly pattern. The project also provides functionality to save the generated data for further analysis and includes daily decomposition for detailed insights.
+This project models and visualizes water demand patterns.
+It employs skewed Gaussian functions todecompose or simulate water demand profiles.
+The project also provides functionality to save the generated data for further analysis and includes daily decomposition for detailed insights.
+This is the code for the research paper: TBA
 
 ## Features
 - **Synthetic Data Generation**: Simulates water demand patterns for each day of the week.
@@ -10,11 +13,6 @@ This project models and visualizes weekly water demand patterns using synthetic 
 - **Visualization**: Plots the weekly water demand pattern with individual Gaussian components.
 - **Data Export**: Saves the generated weekly and daily data to an Excel file for further use.
 
-## Project Structure
-
-
-
-. ├── plot_synthetic_weekly.py # Main script for generating and visualizing weekly patterns ├── skewed_gaussian.py # Defines skewed Gaussian and single Gaussian functions ├── SGD_for_weekly_pattern_construction.ipynb # Jupyter Notebook for interactive analysis ├── weekly_water_demand_pattern.xlsx # Output Excel file with weekly demand data
 
 
 ## Requirements
@@ -35,10 +33,9 @@ This project models and visualizes weekly water demand patterns using synthetic 
 Install the required dependencies:
 pip install -r requirements.txt
 Usage
-1. Generate and Visualize Weekly Patterns
-Run the plot_synthetic_weekly.py script to generate and visualize the weekly water demand pattern:
+1. python notbook: Daily Pattern Decomposition, daily_pattern_decomosition.ipynb
+2. python notbook: Weekly Construction, SGD_for_weekly_pattern_construction.ipynb
 
 
-python plot_synthetic_weekly.py
 
 
