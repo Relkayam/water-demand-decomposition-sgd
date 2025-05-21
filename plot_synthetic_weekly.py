@@ -177,3 +177,5 @@ plt.show()
 # Save the DataFrame to an Excel file
 output_file = 'weekly_water_demand_pattern.xlsx'
 df_week.to_excel(output_file, index=False)
+
+
