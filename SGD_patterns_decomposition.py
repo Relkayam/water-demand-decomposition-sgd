@@ -1,3 +1,15 @@
+"""
+----------------------------------------------------------------------
+Project: water-demand-decomposition-sgd
+Filename: SGD_patterns_decomposition.py
+Author: Roy Elkayam
+Created: 2025-05-23
+Description: this script is used to decompose water demand patterns and plot the results.
+
+----------------------------------------------------------------------
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -6,9 +18,8 @@ from scipy.special import erf
 
 from cons import DefaultsParameters
 from skewed_gaussian import skewed_gaussian
-from composite_and_fit_model import composite_model
+from composite_and_fit_model import composite_model, fit_pattern
 from tools import find_significant_peaks
-from composite_and_fit_model import fit_pattern
 
 
 

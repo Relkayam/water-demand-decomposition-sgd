@@ -1,3 +1,15 @@
+"""
+----------------------------------------------------------------------
+Project: water-demand-decomposition-sgd
+Filename: composite_and_fit_model.py
+Author: Roy Elkayam
+Created: 2025-05-23
+Description: this module contains the function to fit a composite model
+
+----------------------------------------------------------------------
+"""
+
+
 import numpy as np
 from scipy.optimize import minimize
 from skewed_gaussian import skewed_gaussian

@@ -1,3 +1,22 @@
+"""
+----------------------------------------------------------------------
+Project: water-demand-decomposition-sgd
+Filename: skewed_gaussian.py
+Author: Roy Elkayam
+Created: 2025-05-23
+Description:
+    This module contains functions to compute skewed Gaussian functions.
+    The skewed Gaussian function is defined as:
+        f(x) = A * exp(-(x - mu)^2 / (2 * sigma^2)) * (1 + erf(alpha * (x - mu) / (sqrt(2) * sigma)))
+    where:
+        A: Amplitude
+        mu: Mean
+        sigma: Standard deviation
+        alpha: Skewness parameter
+    The function can be used to model asymmetric distributions.
+----------------------------------------------------------------------
+"""
+
 import numpy as np
 from scipy.special import erf
 

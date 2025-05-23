@@ -1,3 +1,15 @@
+"""
+----------------------------------------------------------------------
+Project: water-demand-decomposition-sgd
+Filename: plot_synthetic_weekly.py
+Author: Roy Elkayam
+Created: 2025-05-23
+Description: this script is used to plot the synthetic weekly water demand
+
+----------------------------------------------------------------------
+"""
+
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

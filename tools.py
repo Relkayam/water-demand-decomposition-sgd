@@ -1,6 +1,15 @@
-
+"""
+----------------------------------------------------------------------
+Project: water-demand-decomposition-sgd
+Filename: tools.py
+Author: Roy Elkayam
+Created: 2025-05-23
+Description: find significant peaks in the data.
+----------------------------------------------------------------------
+"""
 
 def find_significant_peaks(df):
+
     df = df.copy()
     col = df.columns[0]
     df.loc[:, 'Hour'] = [val.hour for val in df.index]
@@ -20,3 +29,4 @@ def find_significant_peaks(df):
     df.loc[plato_events, 'peaks'] = 1
     peaks = df.loc[df['peaks'] == 1, 'Hour'].values
     return peaks
+
