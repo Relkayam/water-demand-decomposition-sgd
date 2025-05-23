@@ -70,4 +70,7 @@ Usage
 
 
 
+## License
+
+This project is licensed under the MIT License. Please credit the author when using or modifying the code. See the [LICENSE](LICENSE.txt) file for details.
 
